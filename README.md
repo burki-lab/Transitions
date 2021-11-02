@@ -14,7 +14,7 @@ Or process multiple samples in parallel uisng:
 `parallel --jobs 3 'bash filter.sh {}' ::: [list of paths to folders containing the input files]`
 
 ### 1.2 Further filtering and OTU clustering 
-Further denoise seqs by generating consensus seqs of highly similar seqs (>99% identical), remove any prokaryotic seqs and chimeras, extract 18S and 28S sequences and cluster into OTUs at 97% similarity, and do another round of chimera detection. (Run this step in parellel using the parallel command).   
+Further denoise seqs by generating consensus seqs of highly similar seqs (>99% identical), remove any prokaryotic seqs and chimeras, extract 18S and 28S sequences and cluster into OTUs at 97% similarity, and do another round of chimera detection. (Run this step in parallel using `parallel`).   
 `bash filter_to_otus.sh [path to fasta file]`
 
 ### 1.3 Characterise OTUs 
