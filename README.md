@@ -52,8 +52,18 @@ Get stats about similarity to reference sequences in PR2, abundances, and sequen
 
 
 ## 2. Taxonomic annotation
-This phylogeny-aware taxonomic annotation step requires some manual curation. For a detailed overview of the algorithm, see [Jamy et al. 2020](https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.13117).
+This phylogeny-aware taxonomic annotation step is based on the 18S gene alone as it has more comprehensive databases. Here we use a custom PR2 database (called `PR2_transitions`) with 9 ranks of taxonomy instead of 8. The changes in taxonomy were made to reflect the most recent eukaryotic tree of life (based on [Burki et al. 2019](https://www.sciencedirect.com/science/article/pii/S0169534719302575?via%3Dihub)). This custom database is available on [Figshare](https://figshare.com/articles/dataset/Global_patterns_and_rates_of_habotat_transitions_across_the_eukaryotic_tree_of_life/15164772). Changes to taxonomy can be viewed [here](https://docs.google.com/spreadsheets/d/1XaNgaZb5QTFH-YsvGiEV8a0i37CYr580/edit?usp=sharing&ouid=115778713146153097020&rtpof=true&sd=true). This taxonomic annotation step requires some manual curation. For a detailed overview of the algorithm, see [Jamy et al. 2020](https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.13117). Scripts for this step can be found in the folder `scripts_taxonomy`.
 
 ### 2.1 Initial tree inference
+Infer one tree per sample. Here, we want to infer a global eukaryotic tree with:  
+1. The OTUs from our environmental sample  
+2. The two closest related reference sequences for each OTU. These are referred to in the script as `top2hits`.    
+3. Representatives from all major eukaryotic groups and supergroups (here I selected 124 seqs). The fasta file `pr2.main_groups.fasta` is available in `scripts_taxonomy`. Referred to in the script as EUKREF. 
 
+The script `taxonomy_round1.sh` will assemble this dataset, align with mafft, gently trim the alignment, and infer a quick-and-dirty tree with SH-like support. As before, use `parallel` to compute multiple files simultaneously.
+
+`bash taxonomy_round1.sh [path to directory containing final 18S OTU file]`
+
+### 2.2 Manual curation
+Examine the tree manually in FigTree and colour taxa that should be discarded. Mark nucleomorph sequences (green - hex code: #00FF00), mislabelled reference sequences (blue - hex code: #0000FF), and any OTU sequences that look like artefacts (ridiculously long branch for example) (magenta - hex code: #FF00FF). Nucleomorph OTU sequences are easily identified because they cluster with reference nucleomorph sequences. Mislabelled reference sequences are also easily identified, for example you may find a PR2 sequence annotated as Fungi clustering with Dinoflagellates etc. Other artefact OTU sequences (chimeras) are trickier to spot. I recommend BLASTing suspicious sequences in two halves, and using the information about abundance (in the fasta header) to help you decide which sequences to keep or not. This is an important step so take your time. Save all tree files after examination in a new folder called `taxonomy`.  
 
