@@ -128,6 +128,14 @@ deep_Ms2-mes  ## deep ocean - mesopelagic - from Malaspina
 
 Finally, information on taxonomy and the rank to which the OTU is annotated.
 
+```
+Eukaryota_Obazoa_Opisthokonta_Metazoa_Platyhelminthes_Turbellaria_Macrostomorpha_Macrostomum_Genus
+Eukaryota_TSAR_Stramenopiles_Gyrista_Dictyochophyceae_Dictyochophyceae_X_Pedinellales_Family
+Eukaryota_TSAR_Alveolata_Ciliophora_Colpodea_Colpodea_X_Cyrtolophosidida_Family
+Eukaryota_TSAR_Rhizaria_Cercozoa_Filosa-Imbricatea_Spongomonadida_Spongomonadidae_Spongomonadidae_X_Spongomonadidae_X_sp_Species
+Eukaryota_TSAR_Alveolata_Dinoflagellata_Syndiniales_Dino-Group-I_Dino-Group-I-Clade-5_Dino-Group-I-Clade-5_X_Dino-Group-I-Clade-5_X_sp_Species
+```
+
 Using the script `replace_fasta_header.pl`, I changed the fasta headers of the 28S gene as well so they were identical to the 18S gene.
 
 
