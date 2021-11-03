@@ -73,4 +73,15 @@ Remove all artefactual/misannotated sequences from your fasta files. [Here](http
 `bash taxonomy_round2.sh`
 
 
+### 2.4 Assign taxonomy based on phylogeny
+Here we use two approaches or "strategies" to get taxonomy of the OTUs based on the inferred tree. This step requires a reference *taxonomy* file from PR2. The taxonomy file for the custom *PR2_transitions* database can be found on [Figshare](https://figshare.com/articles/dataset/Global_patterns_and_rates_of_habotat_transitions_across_the_eukaryotic_tree_of_life/15164772).
+
+1. **Strategy 1.** Propagate taxonomy from the closest neighbour to each OTU. 
+2. **Strategy 2.** Prune away OTUs to get a tree containing reference sequences alone. Phylogenetically place the OTUs on the phylogeny and use the placement information to calculate taxonomy and confidence for each taxonomic rank.
+
+Generate a consensus from the two strategies. I recommend manually checking the output table quickly to make sure that everything makes sense. If there are huge conflicts between the two strategies for a sequence, it may be a chimera. Manually check this before discarding though. 
+
+`bash place.sh`
+
+
 
