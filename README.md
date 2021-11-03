@@ -68,3 +68,9 @@ The script `taxonomy_round1.sh` will assemble this dataset, align with mafft, ge
 Examine the tree manually in FigTree and colour taxa that should be discarded. Mark nucleomorph sequences (green - hex code: #00FF00), mislabelled reference sequences (blue - hex code: #0000FF), and any OTU sequences that look like artefacts (ridiculously long branch for example) (magenta - hex code: #FF00FF). Nucleomorph OTU sequences are easily identified because they cluster with reference nucleomorph sequences. Mislabelled reference sequences are also easily identified, for example you may find a PR2 sequence annotated as Fungi clustering with Dinoflagellates etc. Other artefact OTU sequences (chimeras) are trickier to spot. I recommend BLASTing suspicious sequences in two halves, and using the information about abundance (in the fasta header) to help you decide which sequences to keep or not. This is an important step so take your time. Save all tree files after examination in a new folder called `taxonomy`.  
 
 ### 2.3 Build ML trees
+Remove all artefactual/misannotated sequences from your fasta files. [Here](https://docs.google.com/spreadsheets/d/1KHMcCRYNMnRqaP7yrI3UyUK0QYFG06gIjFg09PYjKbI/edit?usp=sharing) is a list of sequences from PR2 that I removed or reannotated. Re-align and trim cleaned fasta files, and re-infer trees. You may need to do another round of cleaning before proceeding. 
+
+`bash taxonomy_round2.sh`
+
+
+
