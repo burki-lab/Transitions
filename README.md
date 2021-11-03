@@ -83,5 +83,54 @@ Generate a consensus from the two strategies. I recommend manually checking the 
 
 `bash place.sh`
 
+### 2.5 Transfer taxonomy to 28S molecule
+Now that we have labelled all our 18S OTU sequences for each sample, we can transfer the taxonomy to the corresponding 28S molecules! I also incorporated the taxonomy information in the fasta headers for both the 18S and 28S genes. 
+
+First, I used a few `sed` commands and the taxonomy output table from the previous step so my fasta headers now looked like this:
+
+```
+>c-1122_conseq_Otu0513_44_soil_PuertoRico_Eukaryota_Obazoa_Opisthokonta_Metazoa_Platyhelminthes_Turbellaria_Macrostomorpha_Macrostomum_Genus
+>c-54_conseq_Otu010_10196_freshwater_Svartberget-fw_Eukaryota_TSAR_Stramenopiles_Gyrista_Dictyochophyceae_Dictyochophyceae_X_Pedinellales_Family
+>c-6522_conseq_Otu0357_21_freshwater_permafrost_Eukaryota_TSAR_Alveolata_Ciliophora_Colpodea_Colpodea_X_Cyrtolophosidida_Family
+>c-5162_conseq_Otu0063_727_soil_Sweden_Eukaryota_TSAR_Rhizaria_Cercozoa_Filosa-Imbricatea_Spongomonadida_Spongomonadidae_Spongomonadidae_X_Spongomonadidae_X_sp_Species
+>c-1765_conseq_Otu299_22_deep_Ms2-mes_Eukaryota_TSAR_Alveolata_Dinoflagellata_Syndiniales_Dino-Group-I_Dino-Group-I-Clade-5_Dino-Group-I-Clade-5_X_Dino-Group-I-Clade-5_X_sp_Species
+```
+
+As before, the first part is the sequence ID. In this case:
+
+```
+c-1122_conseq_Otu0513
+c-54_conseq_Otu010
+c-6522_conseq_Otu0357
+c-5162_conseq_Otu0063
+c-1765_conseq_Otu299
+```
+
+Next is information about abundance (number of reads):
+
+```
+44
+10196
+21
+727
+22
+```
+
+Followed by environment and sample information:
+
+```
+soil_PuertoRico
+freshwater_Svartberget-fw
+freshwater_permafrost
+soil_Sweden
+deep_Ms2-mes  ## deep ocean - mesopelagic - from Malaspina
+```
+
+Finally, information on taxonomy and the rank to which the OTU is annotated.
+
+Using the script `replace_fasta_header.pl`, I changed the fasta headers of the 28S gene as well so they were identical to the 18S gene.
+
+
+## 3. Global eukaryotic 18S-28S tree
 
 
