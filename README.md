@@ -1,4 +1,4 @@
-# Data and scripts for "Global patterns and rates of habitat transitions across the eukaryotic tree of life" (Jamy et al. 2021)
+# Scripts for "Global patterns and rates of habitat transitions across the eukaryotic tree of life" (Jamy et al. 2021)
 
 This repository contains all scripts used for processing PacBio Sequel II data (18S-28S) and for ancestral state reconstruction analyses. Check first lines of scripts for usage instructions, required software, and other comments.
 
