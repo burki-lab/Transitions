@@ -1,6 +1,6 @@
-# Transitions
+# Data and scripts for "Global patterns and rates of habitat transitions across the eukaryotic tree of life" (Jamy et al. 2021)
 
-This repository contains all scripts used for processing PacBio Sequel II data (18S-28S) and for ancestral state reconstruction analyses. Check first lines of scripts for usage instructions and other comments.
+This repository contains all scripts used for processing PacBio Sequel II data (18S-28S) and for ancestral state reconstruction analyses. Check first lines of scripts for usage instructions, required software, and other comments.
 
 ## 1. Processing Sequel II data
 
@@ -67,3 +67,4 @@ The script `taxonomy_round1.sh` will assemble this dataset, align with mafft, ge
 ### 2.2 Manual curation
 Examine the tree manually in FigTree and colour taxa that should be discarded. Mark nucleomorph sequences (green - hex code: #00FF00), mislabelled reference sequences (blue - hex code: #0000FF), and any OTU sequences that look like artefacts (ridiculously long branch for example) (magenta - hex code: #FF00FF). Nucleomorph OTU sequences are easily identified because they cluster with reference nucleomorph sequences. Mislabelled reference sequences are also easily identified, for example you may find a PR2 sequence annotated as Fungi clustering with Dinoflagellates etc. Other artefact OTU sequences (chimeras) are trickier to spot. I recommend BLASTing suspicious sequences in two halves, and using the information about abundance (in the fasta header) to help you decide which sequences to keep or not. This is an important step so take your time. Save all tree files after examination in a new folder called `taxonomy`.  
 
+### 2.3 Build ML trees
