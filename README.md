@@ -139,6 +139,6 @@ Eukaryota_TSAR_Alveolata_Dinoflagellata_Syndiniales_Dino-Group-I_Dino-Group-I-Cl
 Using the script `replace_fasta_header.pl`, I changed the fasta headers of the 28S gene as well so they were identical to the 18S gene.
 
 
-## 3. Global eukaryotic 18S-28S tree
+
 
 
