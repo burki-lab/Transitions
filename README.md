@@ -37,7 +37,7 @@ m64077_200204_130436/91750552/ccs_Otu1341
 
 The biggest OTU (in terms of abundance) is `Otu0001` in this case, `Otu0010` is the tenth biggest OTU and so on.
 
-The last number (i.e.e after the Otu term) is the OTU abundnace. For instance the fasta headers above show the following abundances:  
+The last number (i.e. after the Otu term) is the OTU abundnace. For instance the fasta headers above show the following abundances:  
 ```
 64589    
 2897  
