@@ -37,7 +37,7 @@ m64077_200204_130436/91750552/ccs_Otu1341
 
 The biggest OTU (in terms of abundance) is `Otu0001` in this case, `Otu0010` is the tenth biggest OTU and so on.
 
-The last number (i.e. after the Otu term) is the OTU abundnace. For instance the fasta headers above show the following abundances:  
+The last number (i.e. after the Otu term) is the OTU abundance. For instance the fasta headers above show the following abundances:  
 ```
 64589    
 2897  
@@ -140,5 +140,136 @@ Using the script `replace_fasta_header.pl`, I changed the fasta headers of the 2
 
 
 
+## 3. Global 18S-28S phylogeny
+
+Any scripts and necessary files for this section can be found in the folder `scripts_global_phylogeny`.
+
+### 3.1 Align, trim and concatenate
+
+First combine the labelled 18S sequences from all samples into a single fasta file. I labelled mine `all.18S.fasta`. I did the same for the 28S gene and lablled it `all.28S.fasta`.
+
+Align the 18S and 28S genes with mafft-auto. Since it is a large number of sequences, mafft used the FFT-NS-2 algorithm. (Here I also tried the SINA aligner, T-Coffee and Kalign - I inspected all alignments visually by eye and found that SINA and T-Coffee gave me bad alignments where even the most conserved regions of the 18S gene were not aligned. Kalign and mafft seemed to work better and in the end I chose to stick to mafft.) 
+
+```
+mafft --thread 20 --reorder all.18S.fasta > all.18S.mafft.fasta
+mafft --thread 20 --reorder all.28S.fasta > all.28S.mafft.fasta
+```
+
+Next trim the alignments. Here we want to gently trim the alignments so that we reduce the number of alignment sites and make tree inference less computationally intensive. However, we do not want to trim too much as we want to combine it short read metabarcoding data (V4 region) in a later step. After several trials I opted to remove columns with more than 95% gaps. 
+
+```
+trimal -in all.18S.mafft.fasta -out all.18S.mafft.trimal.fasta -gt 0.05
+trimal -in all.28S.mafft.fasta -out all.28S.mafft.trimal.fasta -gt 0.05
+```
+
+After visually inspecting the alignments, concatenate the 18S and 28S genes. I use the script `concat_fasta.pl` found at https://github.com/iirisarri/phylogm/blob/master/concat_fasta.pl
+
+```
+perl concat_fasta.pl all.18S.mafft.trimal.fasta all.28S.mafft.trimal.fasta > all.concat.mafft.trimal.fasta
+```
+
+
+### 3.2 Several rounds of prelimiary phylogenies
+
+Infer Maximum Likelihood phylogenies (unconstrained) with RAxML v8 (I don't recommend using raxml-ng at this stage because it does not have the GTRCAT model implemented yet, so tree inference is much slower). 
+
+```
+for i in $(seq 20); do raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -m GTRCAT -n all.concat.${1} -T 7 -p $RANDOM; done
+```
+
+Visually inspect the best ML tree and remove any chimeras or artefacts. Because our sequences are taxonomically labelled, it should make looking at the tree easier. Flag and remove chimeras (e.g. any Ascomycetes sequences that cluster with Basidiomycetes), check potential artefacts such as long-branches. Remove artefactual taxa, re-align, trim and re-infer trees. Do several rounds of this. 
+
+I also removed super-fast evolving taxa using [TreeShrink](https://github.com/uym2/TreeShrink).
+
+```
+run_treeshrink.py -t RAxML_bestTree.all.concat -k 2500
+```
+
+(I played with several values of `k` and selected 2500 as it seemed reasonable for my dataset). In my case, 118 long branches were identified, mostly consisting of *Mesodinium*, *Microsporidium*, many unlabelled taxa, several Apicomplexa, several Discoba, and Colladaria. Fast-evolving taxa were removed to avoid long-branch attraction. 
+
+I also did two rounds of preliminary phylogenies that were constrained. See next step to see how I constrained trees.
+
+
+### 3.3 Infer final ML global phylogeny (constrained)
+
+Once satisfied, I ran a final global ML phylogeny. For this paper, I enforced monophyly for groups such as ciliates, dinoflagellates, fungi etc. These groups correspond to rank 4 in the *PR2_transitions* [dataset](https://docs.google.com/spreadsheets/d/1XaNgaZb5QTFH-YsvGiEV8a0i37CYr580/edit?usp=sharing&ouid=115778713146153097020&rtpof=true&sd=true). The constrained groups and overview of the backbone phylogeny can be seen in `scripts_global_phylogeny/constrained_groups.newick`. 
+
+I then used the taxonomic labels of each sequence to set up a multifucating constraint file (see [this guide](https://cme.h-its.org/exelixis/web/software/raxml/hands_on.html) on constraint trees by the Exelexis lab for more information). 
+
+```
+## Picozoa
+cat all.concat.mafft.trimal.fasta | grep "Picozoa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Picozoa.txt
+
+## Amoebozoa
+cat all.concat.mafft.trimal.fasta | grep "Discosea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Discosea.txt
+cat all.concat.mafft.trimal.fasta | grep "Tubulinea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Tubulinea.txt
+cat all.concat.mafft.trimal.fasta | grep "Evosea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Evosea.txt
+
+## Opisthokonta
+cat all.concat.mafft.trimal.fasta | grep "Apusomonada" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Apusomonada.txt
+cat all.concat.mafft.trimal.fasta | grep "Breviatea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Breviatea.txt
+cat all.concat.mafft.trimal.fasta | grep "Choanoflagellata" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Choanoflagellata.txt
+cat all.concat.mafft.trimal.fasta | grep "Metazoa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Metazoa.txt
+cat all.concat.mafft.trimal.fasta | grep "Filasterea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Filasterea.txt
+cat all.concat.mafft.trimal.fasta | grep "Pluriformea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Pluriformea.txt
+cat all.concat.mafft.trimal.fasta | grep "Ichthyosporea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Ichthyosporea.txt
+cat all.concat.mafft.trimal.fasta | grep "Fungi" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Fungi.txt
+cat all.concat.mafft.trimal.fasta | grep "Rotosphaerida" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Rotosphaerida.txt
+
+## Archaeplastida
+cat all.concat.mafft.trimal.fasta | grep "Chlorophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Chlorophyta.txt
+cat all.concat.mafft.trimal.fasta | grep "Streptophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Streptophyta.txt
+cat all.concat.mafft.trimal.fasta | grep "Glaucophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Glaucophyta.txt
+cat all.concat.mafft.trimal.fasta | grep "Rhodelphea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Rhodelphea.txt
+
+## Cryptista
+cat all.concat.mafft.trimal.fasta | grep "Cryptophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Cryptophyta.txt
+cat all.concat.mafft.trimal.fasta | grep "Kathablepharidacea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Kathablepharidacea.txt
+
+## Haptista
+cat all.concat.mafft.trimal.fasta | grep "Centroplasthelida" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Centroplasthelida.txt
+cat all.concat.mafft.trimal.fasta | grep "Haptophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Haptophyta.txt
+
+## TSAR
+cat all.concat.mafft.trimal.fasta | grep "Telonemia" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Telonemia.txt
+cat all.concat.mafft.trimal.fasta | grep "Bigyra" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Bigyra.txt
+cat all.concat.mafft.trimal.fasta | grep "Gyrista" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Gyrista.txt
+cat all.concat.mafft.trimal.fasta | grep "Apicomplexa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Apicomplexa.txt
+cat all.concat.mafft.trimal.fasta | grep "Colpodellida" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Colpodellida.txt
+cat all.concat.mafft.trimal.fasta | grep "Dinoflagellata" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Dinoflagellata.txt
+cat all.concat.mafft.trimal.fasta | grep "Perkinsea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Perkinsea.txt
+cat all.concat.mafft.trimal.fasta | grep "Ciliophora" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Ciliophora.txt
+cat all.concat.mafft.trimal.fasta | grep "Cercozoa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Cercozoa.txt
+cat all.concat.mafft.trimal.fasta | grep "Foraminifera" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Foraminifera.txt
+cat all.concat.mafft.trimal.fasta | grep "Radiolaria" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Radiolaria.txt
+
+## Excavata
+cat all.concat.mafft.trimal.fasta | grep "Malawimonad" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Malawimonad.txt
+cat all.concat.mafft.trimal.fasta | grep "Metamonada" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Metamonada.txt
+cat all.concat.mafft.trimal.fasta | grep "Discoba" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Discoba.txt
+
+## Other
+cat all.concat.mafft.trimal.fasta | grep "Ancyromonad" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Ancyromonad.txt
+cat all.concat.mafft.trimal.fasta | grep "Hemimastigophora" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Hemimastigophora.txt
+cat all.concat.mafft.trimal.fasta | grep "CRuMs" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/CRuMs.txt
+```
+
+Once I had the list of taxa for each group, I put it all together using a simple bash script `scripts_global_phylogeny/combine.sh`. Please note that this script is hard-coded to work for this specific datatset. 
+
+```
+cd constrained
+
+## ran a script to put it together in a newick file
+bash combine.sh
+```
+
+This script will generate a file called `constraint.txt.tre`. Check it in FigTree to confirm that it makes sense. 
+
+
+Finally run the global phylogeny!
+
+```
+for i in $(seq 100); do raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -m GTRCAT -n all.concat.${1} -T 7 -p $RANDOM -j -g constraint.txt.tre; done
+```
 
 
