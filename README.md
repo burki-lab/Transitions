@@ -11,11 +11,11 @@ First, use DADA2 to remove primers, orient reads to be in the same direction, an
 `Rscript DADA2.r`
 
 Or process multiple samples in parallel using:  
-`parallel --jobs 3 'bash filter.sh {}' ::: [list of paths to folders containing the input files]`
+`parallel --jobs 3 'bash scripts_PacBio_process/filter.sh {}' ::: [list of paths to folders containing the input files]`
 
 ### 1.2 Further filtering and OTU clustering 
 Further denoise seqs by generating consensus seqs of highly similar seqs (>99% identical), remove any prokaryotic seqs and chimeras, extract 18S and 28S sequences and cluster into OTUs at 97% similarity, and do another round of chimera detection. (Run this step in parallel using `parallel`).   
-`bash filter_to_otus.sh [path to fasta file]`
+`bash scripts_PacBio_process/filter_to_otus.sh [path to fasta file]`
 
 The output is fasta files with OTU representative sequences for both 18S and 28S. The headers look like this:  
 
@@ -48,7 +48,7 @@ The last number (i.e. after the Otu term) is the OTU abundance. For instance the
 
 ### 1.3 Characterize OTUs 
 Get stats about similarity to reference sequences in PR2, abundances, and sequence lengths (run on multiple samples parallel using parallel). Output files can be plotted in R for visualisation.  
-`bash characterize_otus.sh [path to directory containing OTU fasta files]`
+`bash scripts_PacBio_process/characterize_otus.sh [path to directory containing OTU fasta files]`
 
 
 ## 2. Taxonomic annotation
@@ -62,7 +62,7 @@ Infer one tree per sample. Here, we want to infer a global eukaryotic tree with:
 
 The script `taxonomy_round1.sh` will assemble this dataset, align with mafft, gently trim the alignment, and infer a quick-and-dirty tree with SH-like support. As before, use `parallel` to compute multiple files simultaneously.
 
-`bash taxonomy_round1.sh [path to directory containing final 18S OTU file]`
+`bash scripts_taxonomy/taxonomy_round1.sh [path to directory containing final 18S OTU file]`
 
 ### 2.2 Manual curation
 Examine the tree manually in FigTree and colour taxa that should be discarded. Mark nucleomorph sequences (green - hex code: #00FF00), mislabelled reference sequences (blue - hex code: #0000FF), and any OTU sequences that look like artefacts (ridiculously long branch for example) (magenta - hex code: #FF00FF). Nucleomorph OTU sequences are easily identified because they cluster with reference nucleomorph sequences. Mislabelled reference sequences are also easily identified, for example you may find a PR2 sequence annotated as Fungi clustering with Dinoflagellates etc. Other artefact OTU sequences (chimeras) are trickier to spot. I recommend BLASTing suspicious sequences in two halves, and using the information about abundance (in the fasta header) to help you decide which sequences to keep or not. This is an important step so take your time. Save all tree files after examination in a new folder called `taxonomy`.  
@@ -70,7 +70,7 @@ Examine the tree manually in FigTree and colour taxa that should be discarded. M
 ### 2.3 Build ML trees
 Remove all artefactual/misannotated sequences from your fasta files. [Here](https://docs.google.com/spreadsheets/d/1KHMcCRYNMnRqaP7yrI3UyUK0QYFG06gIjFg09PYjKbI/edit?usp=sharing) is a list of sequences from PR2 that I removed or reannotated. Re-align and trim cleaned fasta files, and re-infer trees. You may need to do another round of cleaning before proceeding. 
 
-`bash taxonomy_round2.sh`
+`bash scripts_taxonomy/taxonomy_round2.sh`
 
 
 ### 2.4 Assign taxonomy based on phylogeny
@@ -81,7 +81,7 @@ Here we use two approaches or "strategies" to get taxonomy of the OTUs based on 
 
 Generate a consensus from the two strategies. I recommend manually checking the output table quickly to make sure that everything makes sense. If there are huge conflicts between the two strategies for a sequence, it may be a chimera. Manually check this before discarding though. 
 
-`bash place.sh`
+`bash scripts_taxonomy/place.sh`
 
 ### 2.5 Transfer taxonomy to 28S molecule
 Now that we have labelled all our 18S OTU sequences for each sample, we can transfer the taxonomy to the corresponding 28S molecules! I also incorporated the taxonomy information in the fasta headers for both the 18S and 28S genes. 
@@ -136,7 +136,7 @@ Eukaryota_TSAR_Rhizaria_Cercozoa_Filosa-Imbricatea_Spongomonadida_Spongomonadida
 Eukaryota_TSAR_Alveolata_Dinoflagellata_Syndiniales_Dino-Group-I_Dino-Group-I-Clade-5_Dino-Group-I-Clade-5_X_Dino-Group-I-Clade-5_X_sp_Species
 ```
 
-Using the script `replace_fasta_header.pl`, I changed the fasta headers of the 28S gene as well so they were identical to the 18S gene.
+Using the script `scripts_taxonomy/replace_fasta_header.pl`, I changed the fasta headers of the 28S gene as well so they were identical to the 18S gene.
 
 
 
@@ -258,6 +258,7 @@ Once I had the list of taxa for each group, I put it all together using a simple
 
 ```
 cd constrained
+cp scripts_global_phylogeny/combine.sh .
 
 ## ran a script to put it together in a newick file
 bash combine.sh
@@ -276,5 +277,59 @@ for i in $(seq 100); do raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -
 raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -m GTRCAT -T7 -n bootstraps -g constraint.txt.tre - p $RANDOM -b $RANDOM -#100
 ```
 
+I visualised the best ML tree. First root it arbitrarily at Amorphea. I used a custom script that roots a tree at a specified node. The node is specified as the ancestor of two or more tips. In this case I made a list of sequences in Amorphea (see `scripts_global_phylogeny/Amorphea.list`). 
+
+```
+python scripts_global_phylogeny/root_at_node.py RAxML_bestTree.all.concat.53 Amorphea.list RAxML_bestTree.all.concat.53.rooted.tre
+```
+
+View the phylogeny in anvi'o. Decorate the phylogeny with taxonomy, % similarity to references in PR2, and habitat (listed in the fast header). I beautified the figure in Adobe Illustrator. 
+
+
+
+### 3.4 Unifrac analyses
+
+Perform Unifrac analsis on the best ML tree. Using mothur for this. 
+
+```
+### First generate groups file. This is a tab delimited file that contains two columns: the taxa name and which group they belong to.
+cat all.concat.mafft.trimal.fasta | grep ">" | tr -d '>' | grep "freshwater" | sed -E 's/(.*)/\1\tfreshwater/' > habitats.unifrac.txt
+cat all.concat.mafft.trimal.fasta | grep ">" | tr -d '>' | grep "soil" | sed -E 's/(.*)/\1\tsoil/' >> habitats.unifrac.txt
+cat all.concat.mafft.trimal.fasta | grep ">" | tr -d '>' | grep "surface" | sed -E 's/(.*)/\1\tsurface/' >> habitats.unifrac.txt
+cat all.concat.mafft.trimal.fasta | grep ">" | tr -d '>' | grep "deep" | sed -E 's/(.*)/\1\tdeep/' >> habitats.unifrac.txt
+
+### Clustering habitats
+mothur "#unifrac.unweighted(tree=RAxML_bestTree.all.concat.53.rooted.tre, group=habitats.unifrac.txt, distance=square, random=t)"
+```
+
+Do the same for the samples.
+
+
+### 3.5 Patristic distances
+
+The aim here was to generate a graph that compares pairwise patristic distances between all leaves on the concatenated 18S-28S tree and whether or not they are from the same habitat. I exptected to see a trend where closley related OTUs are from the same habitat, and this relationship breaks down as the patristic distance increases.
+
+Calculate pairwise patristic distances of the rooted tree. For this I found a script online: https://github.com/linsalrob/EdwardsLab/blob/master/trees/tree_to_cophenetic_matrix.py
+
+```
+python scripts_global_phylogeny/tree_to_cophenetic_matrix.py -t rooted.amorphea.RAxML_bestTree.all.concat.53 > pairwise_distance.matrix
+
+Converting square matrix to cleaned text file (i.e. without duplicates and self comparisons) 
+awk 'NR==1{for(i=2; i<=NF; i++){a[i]=$i}} NR!=1{for(i=NR+1; i<=NF; i++){print $1 "\t" a[i-1] "\t" $i}}' pairwise_distance.matrix > pairwise_distance.txt
+```
+
+Only extracting pairwise comparisons that are separated by a distance of less than 1.5 to avoid comparisons between taxa that are extremely distantly related (where we dont expect to see any relationhip between habitat type and distance anyway).
+
+```
+cat pairwise_distance.txt | awk '$3 < 1.5' > pairwise_distance.1.5.txt
+```
+
+Do habitat comparisons
+
+```
+bash mar-terr.sh pairwise_distance.1.5.txt mar-terr.txt
+bash fw-soil.sh pairwise_distance.1.5.txt fw-soil.txt
+bash surface-deep.sh pairwise_distance.1.5.txt surface-deep.txt
+```
 
 
