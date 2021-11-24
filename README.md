@@ -269,7 +269,12 @@ This script will generate a file called `constraint.txt.tre`. Check it in FigTre
 Finally run the global phylogeny!
 
 ```
+## 100 ML trees
 for i in $(seq 100); do raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -m GTRCAT -n all.concat.${1} -T 7 -p $RANDOM -j -g constraint.txt.tre; done
+
+## 100 bootstrap replicates
+raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -m GTRCAT -T7 -n bootstraps -g constraint.txt.tre - p $RANDOM -b $RANDOM -#100
 ```
+
 
 
