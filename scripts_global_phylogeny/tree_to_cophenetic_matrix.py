@@ -1,3 +1,6 @@
+### Script source: https://github.com/linsalrob/EdwardsLab/blob/master/trees/tree_to_cophenetic_matrix.py
+
+
 """
 Start with a tree file, use ete3 to create a cophenetic distance matrix
 
