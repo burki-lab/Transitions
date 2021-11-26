@@ -197,61 +197,7 @@ Once satisfied, I ran a final global ML phylogeny. For this paper, I enforced mo
 I then used the taxonomic labels of each sequence to set up a multifucating constraint file (see [this guide](https://cme.h-its.org/exelixis/web/software/raxml/hands_on.html) on constraint trees by the Exelexis lab for more information). 
 
 ```
-## Picozoa
-cat all.concat.mafft.trimal.fasta | grep "Picozoa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Picozoa.txt
-
-## Amoebozoa
-cat all.concat.mafft.trimal.fasta | grep "Discosea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Discosea.txt
-cat all.concat.mafft.trimal.fasta | grep "Tubulinea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Tubulinea.txt
-cat all.concat.mafft.trimal.fasta | grep "Evosea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Evosea.txt
-
-## Opisthokonta
-cat all.concat.mafft.trimal.fasta | grep "Apusomonada" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Apusomonada.txt
-cat all.concat.mafft.trimal.fasta | grep "Breviatea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Breviatea.txt
-cat all.concat.mafft.trimal.fasta | grep "Choanoflagellata" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Choanoflagellata.txt
-cat all.concat.mafft.trimal.fasta | grep "Metazoa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Metazoa.txt
-cat all.concat.mafft.trimal.fasta | grep "Filasterea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Filasterea.txt
-cat all.concat.mafft.trimal.fasta | grep "Pluriformea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Pluriformea.txt
-cat all.concat.mafft.trimal.fasta | grep "Ichthyosporea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Ichthyosporea.txt
-cat all.concat.mafft.trimal.fasta | grep "Fungi" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Fungi.txt
-cat all.concat.mafft.trimal.fasta | grep "Rotosphaerida" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Rotosphaerida.txt
-
-## Archaeplastida
-cat all.concat.mafft.trimal.fasta | grep "Chlorophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Chlorophyta.txt
-cat all.concat.mafft.trimal.fasta | grep "Streptophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Streptophyta.txt
-cat all.concat.mafft.trimal.fasta | grep "Glaucophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Glaucophyta.txt
-cat all.concat.mafft.trimal.fasta | grep "Rhodelphea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Rhodelphea.txt
-
-## Cryptista
-cat all.concat.mafft.trimal.fasta | grep "Cryptophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Cryptophyta.txt
-cat all.concat.mafft.trimal.fasta | grep "Kathablepharidacea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Kathablepharidacea.txt
-
-## Haptista
-cat all.concat.mafft.trimal.fasta | grep "Centroplasthelida" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Centroplasthelida.txt
-cat all.concat.mafft.trimal.fasta | grep "Haptophyta" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Haptophyta.txt
-
-## TSAR
-cat all.concat.mafft.trimal.fasta | grep "Telonemia" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Telonemia.txt
-cat all.concat.mafft.trimal.fasta | grep "Bigyra" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Bigyra.txt
-cat all.concat.mafft.trimal.fasta | grep "Gyrista" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Gyrista.txt
-cat all.concat.mafft.trimal.fasta | grep "Apicomplexa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Apicomplexa.txt
-cat all.concat.mafft.trimal.fasta | grep "Colpodellida" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Colpodellida.txt
-cat all.concat.mafft.trimal.fasta | grep "Dinoflagellata" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Dinoflagellata.txt
-cat all.concat.mafft.trimal.fasta | grep "Perkinsea" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Perkinsea.txt
-cat all.concat.mafft.trimal.fasta | grep "Ciliophora" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Ciliophora.txt
-cat all.concat.mafft.trimal.fasta | grep "Cercozoa" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Cercozoa.txt
-cat all.concat.mafft.trimal.fasta | grep "Foraminifera" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Foraminifera.txt
-cat all.concat.mafft.trimal.fasta | grep "Radiolaria" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Radiolaria.txt
-
-## Excavata
-cat all.concat.mafft.trimal.fasta | grep "Malawimonad" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Malawimonad.txt
-cat all.concat.mafft.trimal.fasta | grep "Metamonada" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Metamonada.txt
-cat all.concat.mafft.trimal.fasta | grep "Discoba" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Discoba.txt
-
-## Other
-cat all.concat.mafft.trimal.fasta | grep "Ancyromonad" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Ancyromonad.txt
-cat all.concat.mafft.trimal.fasta | grep "Hemimastigophora" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/Hemimastigophora.txt
-cat all.concat.mafft.trimal.fasta | grep "CRuMs" | tr -d '>' | sed -E 's/(.*)/\1, /' | tr -d '\n' | sed -E 's/, $//' > constrained/CRuMs.txt
+bash set_up_constraint.sh
 ```
 
 Once I had the list of taxa for each group, I put it all together using a simple bash script `scripts_global_phylogeny/combine.sh`. Please note that this script is hard-coded to work for this specific datatset. 
@@ -332,4 +278,126 @@ bash fw-soil.sh pairwise_distance.1.5.txt fw-soil.txt
 bash surface-deep.sh pairwise_distance.1.5.txt surface-deep.txt
 ```
 
+
+## 4 Incorporate short read metabarcoding data
+
+To increase covered diversity, include existing short-read metabarcoding data. See Supplmenetary Table 3 of the manuscript to see which studies were included. Any scripts used are provided 
+
+
+### 4.1 Process raw data
+
+Primers were with `cutadapt` (maximum error rate = 10%). We used the `DADA2 R package` to process reads into ASVs using the `filterAndTrim` function, adapting the paaremters for each dataset. Where appropriate, forward and reverse reads were merged with the `mergePairs` function with default parameters, and chimeras removed with the `removeBimeraDenovo` function. We assigned taxonomy to the ASVs using the `assignTaxonomy` function against the PR2 database version 4.12.
+
+ASVs from each study were concatenated together based on habitat (freshwater, soil, marine euphotic, and marine aphotic). This resulted in four fasta files, one for each habitat.
+
+
+### 4.2 Cluster ASVs
+
+ASVs from each dataset span slightly different regions of the V4, depending on the primer set used by each study. To reduce redundancy and to make the size of the dataset more manageable for phylogenetic analyses, we clustered the ASVs into OTUs at 97% similarity. 
+
+```
+for i in *fasta; do vsearch --cluster_size $i --sizein --sizeout --centroids "$i".centroids --id 0.97 --iddef 2 --uc "$i".ucfile; done
+```
+
+We then cleaned up the datasets to be conservative in what we considered to be present in a habitat. We decided to retain OTUs that have at least 100 reads or are present in at least two distinct samples. 
+
+```
+bash scripts_short_reads/filter_OTUs.sh <path to directory containing input files>
+```
+
+### 4.3 Align short reads to long-read alignment (from step 3)
+
+Short-reads were aligned with PaPaRa using the best ML tree from step 3 as reference (in practice, any tree will do). 
+
+PaPaRa expects the reference alignment to be in phylip format.
+
+```
+perl scripts_short_reads/fasta2phylip.pl -f all.concat.mafft.trimal.fasta -o all.concat.mafft.trimal.phylip
+```
+
+The query (short-read) sequences should be in uppercase or PaPaRa will fail. 
+
+```
+cat soil.filtered.fasta | seqkit seq -u > soil.filtered.u.fasta 
+cat fw.filtered.fasta | seqkit seq -u > fw.filtered.u.fasta 
+cat surface.filtered.fasta | seqkit seq -u > surface.filtered.u.fasta 
+cat deep.filtered.fasta | seqkit seq -u > deep.filtered.u.fasta 
+```
+
+Align!
+
+```
+papara -t ../RAxML_bestTree.all.concat.53 -s all.concat.mafft.trimal.phylip -q soil.filtered.u.fasta -r -j 8
+papara -t ../RAxML_bestTree.all.concat.53 -s all.concat.mafft.trimal.phylip -q fw.filtered.u.fasta -r -j 8
+papara -t ../RAxML_bestTree.all.concat.53 -s all.concat.mafft.trimal.phylip -q surface.filtered.u.fasta -r -j 8
+papara -t ../RAxML_bestTree.all.concat.53 -s all.concat.mafft.trimal.phylip -q deep.filtered.u.fasta -r -j 8
+```
+
+Convert resulting alignments to fasta, and rename them to indicate the habitat.
+
+```
+cat papara_alignment.default | sed -e '1d' -e 's/^/>/g' -e 's/[[:blank:]]\+/\n/g' > papara_alignment.fasta
+```
+
+Visualise the alignment in ALiView for a sanity check. Do the short reads align to the V4 region? Remove any that align elsewhere. 
+
+
+### 4.4 Phylogenetic placement
+
+Extract query sequences from the PaPaRa alignments.
+
+```
+cat soil.papara_alignment.clean.fasta | seqkit grep -r -p "asv" > soil.aligned.queries.fasta
+cat fw.papara_alignment.clean.fasta | seqkit grep -r -p "asv" > fw.aligned.queries.fasta
+cat surface.papara_alignment.clean.fasta | seqkit grep -r -p "asv" > surface.aligned.queries.fasta
+cat deep.papara_alignment.clean.fasta | seqkit grep -r -p "asv" > deep.aligned.queries.fasta
+```
+
+We'll use the best ML tree from step 3 as the reference tree. In practice it doesnt matter so much.
+
+Get model for EPA
+
+```
+raxml-ng --evaluate --msa all.concat.mafft.trimal.fasta --tree RAxML_bestTree.all.concat.53.rooted.tre --model GTR+G --threads 8
+```
+
+Placement with EPA-ng!
+
+```
+epa-ng -s all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q soil.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+epa-ng -s ../all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q fw.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+epa-ng -s ../all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q surface.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+epa-ng -s ../all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q deep.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+```
+
+Visualised the jplace files using iTOL.
+
+
+We removed queries with high EDPL (which indicates sequences that were poorly placed).
+
+Examine EDPL.
+
+```
+gappa examine edpl --jplace-path epa_result.soil.jplace --threads 2
+gappa examine edpl --jplace-path epa_result.fw.jplace --threads 2
+gappa examine edpl --jplace-path epa_result.surface.jplace --threads 2
+gappa examine edpl --jplace-path epa_result.deep.jplace --threads 2
+```
+
+Get a list of poorly placed queries; i.e. with high EDPL (i.e. above 0.05). This list will be used later to filter out these poorly placed queries.
+
+```
+cat *edpl_list.csv | tr ',' '\t' | egrep "e-[0-9]" -v | grep -v "EDPL" | LC_ALL=C awk '$4 > 0.05' | cut -f2 > high_edpl.list
+```
+
+Calculate Earth mover's distance to see how distinct the habitats are.
+
+```
+gappa analyze krd --jplace-path deep.jplace soil.jplace surface.jplace fw.jplace
+
+mothur "#tree.shared(phylip=matrix.csv)"
+```
+
+
+## 5 Inferring clade specific phylogenies with short- and long-read data
 
