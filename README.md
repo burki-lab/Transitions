@@ -365,9 +365,9 @@ Placement with EPA-ng!
 
 ```
 epa-ng -s all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q soil.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
-epa-ng -s ../all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q fw.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
-epa-ng -s ../all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q surface.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
-epa-ng -s ../all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q deep.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+epa-ng -s all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q fw.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+epa-ng -s all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q surface.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
+epa-ng -s all.concat.mafft.trimal.fasta -t RAxML_bestTree.all.concat.53.rooted.tre -q deep.aligned.queries.fasta --model all.concat.mafft.trimal.fasta.raxml.bestModel -T 8
 ```
 
 Visualised the jplace files using iTOL.
@@ -400,4 +400,121 @@ mothur "#tree.shared(phylip=matrix.csv)"
 
 
 ## 5 Inferring clade specific phylogenies with short- and long-read data
+
+Infer trees for selected clades. These are clades with both terrestrial and marine sequences. Selected clades were:
+
+Apicomplexa
+Bigyra
+Centroplasthelida
+Cercozoa
+Chlorophyta
+Choanoflagellata
+Ciliophora
+Cryptophyta
+Dinoflagellata
+Discoba
+Fungi
+Gyrista
+Haptophyta
+Ichthyosporea
+Perkinsea
+Telonemia
+
+Put this list in a file called `clades.txt`.
+
+### 5.1 Extract queries/short-read sequences for each clade
+
+Using the placement files, we can extract the short-read sequences for each respective clade. Here we will discard any sequences placed in the "wrong" clade e.g. sequences labelled as "Apicomplexa" placed in "Excavata".
+
+First get reference (i.e. PacBio long-read) tips for each clade. These which will be fed to gappa to extract the sequences placed on that particular clade.
+
+```
+## Get tips for each clade
+cat clades.txt | while read line; do python scripts_infer_clade_trees/get_tip_labels_from_clade.py RAxML_bestTree.all.concat.53.rooted.tre $line > "$line".tips; done
+
+## Add clade label to each sequence so for each clade, we get a tsv with the second column corresponding to clade name.
+for i in *tips; do clade=$(echo $i | cut -f1 -d '.'); cat $i | sed -E "s/(.*)/\1\t$clade/" > temp; mv temp $i; done
+
+## Put together
+cat *tips > all.clades.tips
+```
+
+Now filter all query sequences based on EDPL.
+
+```
+cat soil.aligned.queries.fasta fw.aligned.queries.fasta surface.aligned.queries.fasta deep.aligned.queries.fasta > all.aligned.queries.fasta
+
+cat all.aligned.queries.fasta | seqkit grep -f high_edpl.list -v > all.aligned.queries.filtered.fasta 
+```
+
+Now get per clade jplace and fasta files.
+
+```
+gappa prepare extract --jplace-path epa_result.soil.jplace --clade-list-file all.clades.tips --fasta-path all.aligned.queries.filtered.fasta --point-mass --threads 4 > soil.log
+gappa prepare extract --jplace-path epa_result.fw.jplace --clade-list-file all.clades.tips --fasta-path all.aligned.queries.filtered.fasta --point-mass --threads 4 > fw.log
+gappa prepare extract --jplace-path epa_result.surface.jplace --clade-list-file all.clades.tips --fasta-path all.aligned.queries.filtered.fasta --point-mass --threads 4 > surface.log
+gappa prepare extract --jplace-path epa_result.deep.jplace --clade-list-file all.clades.tips --fasta-path all.aligned.queries.filtered.fasta --point-mass --threads 4 > deep.log
+```
+
+Retain only those short Illumina sequences that are placed there (i.e. remove all amoebozoa from groups like Bigyra etc.).
+
+```
+cat Cercozoa.fasta | seqkit grep -r -p "Cercozoa" > Cercozoa.queries.fasta
+cat Fungi.fasta | seqkit grep -r -p "Fungi" > Fungi.queries.fasta
+...
+```
+
+Make a folder for each clade
+
+```
+cat clades.txt | while read line; do mkdir $line; done
+```
+
+### 5.2 Infer clade trees
+
+First, make files with taxa from clade of interest and outgroup, in order to extract clade and outgroup from the best tree
+
+```
+bash get_clade_outgroup.sh
+```
+
+Extract subtree from global euk phylogeny to serve as the backbone constraint. 
+
+```
+for i in */; do clade=$(echo $i | tr -d '/'); python scripts_infer_clade_trees/get_tip_labels_from_subtree.py RAxML_bestTree.all.concat.53.rooted.tre "$clade".txt > "$i$clade".tips; done
+```
+
+Get ref alignment for each clade. And get queries for each clade. 
+
+```
+for i in */; do clade=$(echo $i | tr -d '/'); cat all.concat.mafft.trimal.fasta | seqkit grep -r -f "$i$clade".tips > "$i$clade".fasta; done 
+
+## Cat together ref and query fasta file
+for i in */; do clade=$(echo $i | tr -d '/'); cd $i; cat *fasta > "$clade".ref.queries.fasta; cd ..; done
+
+## Remove illegal characters
+for i in */; do clade=$(echo $i | tr -d '/'); cd $i; cat "$clade".ref.queries.fasta | tr ';' '_' > temp; mv temp "$clade".ref.queries.fasta; cd ..; done
+```
+
+Set up trees!! An example is shown below.
+
+```
+for i in $(seq 100); do raxmlHPC-PTHREADS-SSE3 -s Centroplasthelida.ref.queries.fasta -m GTRCAT -n Centroplasthelida.${i}.tree -T 7 -p ${i} -r Centroplasthelida.tre; done
+```
+
+Then root trees and remove outgroup for analyses. An example is shown for Bigyra.
+
+```
+### Bigyra
+#### Root at Gyrista
+for i in RAxML_bestTree*; do python scripts_infer_clade_trees/root_at_clade.py $i Gyrista rooted."$i"; done
+#### Extract Bigyra
+for i in rooted.RAxML_bestTree*; do python scripts_infer_clade_trees/extract_clade.py $i Bigyra Bigyra."$i"; done
+```
+
+
+
+
+
+
 
