@@ -226,7 +226,7 @@ raxmlHPC-PTHREADS-AVX -s all.concat.mafft.trimal.fasta -m GTRCAT -T7 -n bootstra
 I visualised the best ML tree. First root it arbitrarily at Amorphea. I used a custom script that roots a tree at a specified node. The node is specified as the ancestor of two or more tips. In this case I made a list of sequences in Amorphea (see `scripts_global_phylogeny/Amorphea.list`). 
 
 ```
-python scripts_global_phylogeny/root_at_node.py RAxML_bestTree.all.concat.53 Amorphea.list RAxML_bestTree.all.concat.53.rooted.tre
+python scripts_global_phylogeny/root_at_node.py RAxML_bestTree.all.concat.53 Amorphea.root.list RAxML_bestTree.all.concat.53.rooted.tre
 ```
 
 View the phylogeny in anvi'o. Decorate the phylogeny with taxonomy, % similarity to references in PR2, and habitat (listed in the fast header). I beautified the figure in Adobe Illustrator. 
@@ -418,7 +418,6 @@ Gyrista
 Haptophyta
 Ichthyosporea
 Perkinsea
-Telonemia
 
 Put this list in a file called `clades.txt`.
 
