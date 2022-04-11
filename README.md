@@ -148,7 +148,7 @@ Any scripts and necessary files for this section can be found in the folder `scr
 
 First combine the labelled 18S sequences from all samples into a single fasta file. I labelled mine `all.18S.fasta`. I did the same for the 28S gene and lablled it `all.28S.fasta`.
 
-Align the 18S and 28S genes with mafft-auto. Since it is a large number of sequences, mafft used the FFT-NS-2 algorithm. (Here I also tried the SINA aligner, T-Coffee and Kalign - I inspected all alignments visually by eye and found that SINA and T-Coffee gave me bad alignments where even the most conserved regions of the 18S gene were not aligned. Kalign and mafft seemed to work better and in the end I chose to stick to mafft.) 
+Align the 18S and 28S genes with mafft-auto. Since it is a large number of sequences, mafft used the FFT-NS-2 algorithm. (Here I also tried the SINA aligner, T-Coffee and Kalign - I inspected all alignments visually by eye and found that SINA and T-Coffee gave me bad alignments where even the most conserved regions of the 18S gene at the start of the alignment were not aligned. Kalign and mafft seemed to work better and in the end I chose to stick to mafft.) 
 
 ```
 mafft --thread 20 --reorder all.18S.fasta > all.18S.mafft.fasta
