@@ -513,6 +513,113 @@ for i in rooted.RAxML_bestTree*; do python scripts_infer_clade_trees/extract_cla
 ```
 
 
+## 6 BayesTraits analyses
+
+These analyses were carried out by following the BayesTraits manual: http://www.evolution.reading.ac.uk/BayesTraitsV3.0.2/Files/BayesTraitsV3.0.2Manual.pdf. We carried out several preliminary analyses (including exploring prior settings) before setting up final analyses.  
+
+### 6.1 Analyses on global eukaryotic phylogeny
+
+#### 6.1.1 Model test on global eukaryotic phylogeny
+
+Model tests were carried out on a randomly chosen global phylogeny and replicated several times. Trees were arbitrarily rooted at Amorphea. 
+
+BayesTraits expects the phylogeny to be in nexus format so we first have to convert newick trees to nexus trees. 
+
+```
+for i in rooted.amorphea*; do python scripts_transitions/newick_to_nexus.py $i "$i".nex; done
+```
+
+BayesTraits also requires a datafile, which is a tsv listing the trait state for each taxon. 
+
+Finally, BayesTraits requires a commands file that specifies the priors, no. of generations in the Markov chain, the burn-in, etc. Two different commands file were set up:  
+1. No clades specified, i.e., qMT (instantaneous rate of transition from marine to terrestrial) and qTM (vice versa) are constant throughout the phylogeny. Note that qMT and qTM are allowed to be unequal. This is the homogeneous model.
+2. Clades specified according to rank4 in PR2-transitions. This is the heterogeneous model.
+
+We used a stepping stone sampler to estimate the marginal log likelihoods under the simple, homogeneous model, and the more complex, heterogeneous model. The command files are shown below.
+
+**Homogeneous model command file with stepping stone sampler**
+
+```
+1
+2
+
+RevJumpHP exp 0 2
+
+Stones 50 5000
+
+Run
+```
+
+**Hetergenous model command file with stepping stone sampler**    
+This file is too large to be replicated here but I show a truncated version.
+
+```
+1
+2
+
+AddTag ApicomplexaTag <list of sequences in Aplicomplexa>
+AddTag BigyraTag <list of sequences in Bigyra> 
+AddTag CentroplasthelidaTag <list of sequences in Centroplasthelida>
+AddTag CercozoaTag <list of sequences in Cercozoa>
+AddTag ChlorophytaTag <list of sequences in Chlorophyta>
+AddTag ChoanoflagellataTag <list of sequences in Choanoflagellata>
+..
+..
+..
+<and so on>
+
+AddPattern Apicomplexa ApicomplexaTag
+AddPattern Bigyra BigyraTag
+AddPattern Centroplasthelida CentroplasthelidaTag
+AddPattern Cercozoa CercozoaTag
+AddPattern Chlorophyta ChlorophytaTag
+AddPattern Choanoflagellata ChoanoflagellataTag
+AddPattern Ciliophora CiliophoraTag
+AddPattern Cryptophyta CryptophytaTag
+AddPattern Dinoflagellata DinoflagellataTag
+AddPattern Discoba DiscobaTag
+AddPattern Discosea DiscoseaTag
+AddPattern Fungi FungiTag
+AddPattern Gyrista GyristaTag
+AddPattern Haptophyta HaptophytaTag
+AddPattern Metazoa MetazoaTag
+AddPattern Perkinsea PerkinseaTag
+AddPattern Streptophyta StreptophytaTag
+
+RevJumpHP exp 0 2
+
+Stones 50 5000
+
+Run
+```
+
+The marginal likelihoods were compared with the following formula:  
+```
+Log Bayes Factors = 2(log marginal likelihood complex model – log marginal likelihood simple model) 
+```
+
+This revealed the complex, heterogeneous model to be a much better fit, indicating that habitat transition rates vary strongly across eukaryotic clades.
+
+
+It was still interesting to investigate whether qMT and qTM showed any pattern at the global scale. We therefore ran BayesTraits with the following commands file:
+
+```
+1
+2
+
+RevJumpHP exp 0 2
+
+BurnIn 2000000
+Iterations 5000000
+
+Run
+```
+
+#### 6.1.2 Ancestral state reconstruction
+
+We calculated ancestral habitats of major eukaryotic clades as well as the last eukaryotic common ancestor. This was done using the hetergenous model. Analyses were run thrice to check for convergence. We also tested two different rooting positions: Amorphea and Discoba. To speed up/parallelize the process, for each condition, I set up 100 BayesTraits runs, one for each tree, and then compiles the results at the end.
+
+
 
 
 
