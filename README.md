@@ -1,5 +1,7 @@
 # Code for "Global patterns and rates of habitat transitions across the eukaryotic tree of life" (Jamy et al. 2022)
 
+[![DOI](https://zenodo.org/badge/379207913.svg)](https://zenodo.org/badge/latestdoi/379207913)
+
 This repository contains all scripts used for processing PacBio Sequel II data (18S-28S) and for ancestral state reconstruction analyses. Check first lines of scripts for usage instructions, required software, and other comments.  
 **N.B:** Non-marine taxa are referred to as "terrestrial" taxa throughout the README (as they originally were in the [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/2021.11.01.466765v1))
 
