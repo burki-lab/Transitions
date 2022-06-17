@@ -678,5 +678,71 @@ for i in *Log.rates.txt; do header=$(grep "Lh" Apicomplexa/Apicomplexa.rooted.RA
 ```
 
 
+#### 6.2.2 Normalised transition rates
 
+Run BayesTraits to get normalised transition rates irrespective of direction.
+
+The analysis is the same as before but with the `NormaliseQMatrix` command added to the commands file.
+
+
+## 7 PastML analyses
+
+To find the relative timing of transitions events we use PastML. However, we first need to convert the phylogenies to chronograms. 
+
+Convert phylogenies into ultrametric trees using Pathd8. 
+
+Add sequence length at the beginning of each tree file. For this, create a file called sequence_length.txt.
+
+```
+cat sequence_length.txt
+Sequence length = 7160; 
+```
+
+```
+for i in */*tree; do cat sequence_length.txt $i > "$i".pathd8.in; done
+```
+
+Run PATHd8!
+```
+for i in */*pathd8.in; do PATHd8 $i "$i".out; done
+```
+
+Remove input files now.
+```
+for i in */*pathd8.in; do rm $i; done
+```
+
+Get the tree/chronogram from the output.
+```
+for i in */*out; do out=$(echo $i | sed -E 's/pathd8.in.out/dated/'); grep "d8 tree" $i | sed -E 's/d8 tree    : //' > $out; done
+```
+
+Remove the pathd8 output to save space.
+
+```
+for i in */*pathd8.in.out; do rm $i; done
+```
+
+Now run PASTML on the chronograms following the manual. The output files need to be formatted though so that they can be parsed by ETE. This is done as follows:
+
+```
+## Format to remove the annotations at the node so that ete is happy with newick files
+for i in */*/named.tree*; do cat $i | sed -E 's/n[0-9]+\:/\:/g' | sed -E 's/root//g' > "$i".ete; done
+```
+
+Calculate no. of transitions.
+
+```
+for i in */*/*ete; do clade=$(echo $i | sed -E 's/([^/*])\/.*/\1/'); python scripts_transitions/transition_counter_MT_conservative.py $i >> "$clade"/"$clade".transition_counts_MT_conservative.txt; done
+for i in */*/*ete; do clade=$(echo $i | sed -E 's/([^/*])\/.*/\1/'); python scripts_transitions/transition_counter_TM_conservative.py $i >> "$clade"/"$clade".transition_counts_TM_conservative.txt; done
+```
+
+...and timing of transitions.
+
+```
+for i in */*/*ete; do clade=$(echo $i | sed -E 's/([^/*])\/.*/\1/'); python scripts_transitions/transition_time_MT_conservative.py $i >> "$clade"/"$clade".transition_time_MT_conservative.txt; done
+for i in */*/*ete; do clade=$(echo $i | sed -E 's/([^/*])\/.*/\1/'); python scripts_transitions/transition_time_TM_conservative.py $i >> "$clade"/"$clade".transition_time_TM_conservative.txt; done
+```
+
+Put these together and plot in R. 
 
