@@ -617,10 +617,65 @@ Run
 
 #### 6.1.2 Ancestral state reconstruction
 
-We calculated ancestral habitats of major eukaryotic clades as well as the last eukaryotic common ancestor. This was done using the hetergenous model. Analyses were run thrice to check for convergence. We also tested two different rooting positions: Amorphea and Discoba. To speed up/parallelize the process, for each condition, I set up 100 BayesTraits runs, one for each tree, and then compiles the results at the end.
+We calculated ancestral habitats of major eukaryotic clades as well as the last eukaryotic common ancestor. This was done using the hetergenous model. Analyses were run thrice to check for convergence. We also tested two different rooting positions: Amorphea and Discoba. To speed up/parallelize the process, for each condition, I set up 100 BayesTraits runs, one for each tree, and then compiled the results at the end.
 
 
+### 6.2 Analyses on clade specific phylogenies
 
+#### 6.2.1 Absolute transition rates
+
+Getting absolute transition rates (as shown in Figure 2a of the manuscript)
+
+```
+cat clades.txt | while read line; do mkdir $line; done
+```
+
+Make a folder for each clade. Copy, or link the tree files from step 5.2 into the folders.
+
+Get taxa list from each tree to get datafile for each tree.
+```
+for i in */*tree; do python transitions_scripts/get_tip_labels_from_tree.py $i > "$i".taxa; done
+```
+
+Create datafiles.
+```
+for i in */*taxa; do cat $i | sed -E 's/(.*freshwater.*)/\1\tT/' | sed -E 's/(.*soil.*)/\1\tT/' | sed -E 's/(.*surface.*)/\1\tM/' | sed -E 's/(.*deep.*)/\1\tM/' > "$i".datafile; done
+```
+
+Convert trees to nexus format
+```
+for i in */*tree; do python scripts_transitions/newick_to_nexus.py $i "$i".nex; done
+for i in */*nex; do cat $i | tr -d "'" > nex; mv nex $i; done
+```
+
+Commands file:
+```
+1
+2
+
+RevJumpHP exp 0 2
+
+BurnIn 500000
+Iterations 1000000
+Sample 500
+
+Run
+```
+
+Get absolute transition rates!
+```
+for i in *tree; do BayesTraitsV3.0.2-Linux/BayesTraitsV3 "$i".nex "$i".taxa.datafile < ../commands.txt; done
+```
+
+Get the results bit of the file
+```
+for i in */*datafile.Log.txt; do clade=$(dirname ${i}); awk '/500500/,EOF { print $0 }' $i >> "$clade".Log.rates.txt; done
+```
+
+Add header line on top
+```
+for i in *Log.rates.txt; do header=$(grep "Lh" Apicomplexa/Apicomplexa.rooted.RAxML_bestTree.Apicomplexa.9.tree.taxa.datafile.Log.txt); awk -v x="$header" 'NR==1{print x} 1' $i > tmp; mv tmp $i; done
+```
 
 
 
